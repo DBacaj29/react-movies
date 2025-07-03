@@ -14,7 +14,7 @@ const COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID;
 // Initialize the Appwrite client
 const client = new Client()
     .setEndpoint('https://fra.cloud.appwrite.io/v1')   // Appwrite API endpoint
-    .setProject({PROJECT_ID})   //  Appwrite project ID
+    .setProject(`${PROJECT_ID}`)   //  Appwrite project ID
 
 // Create an instance (object created from a class or constructor function) of the Databases service using the client
 const database = new Databases(client);
