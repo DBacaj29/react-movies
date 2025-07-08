@@ -1,67 +1,69 @@
-// Import React — this is required for defining React components.
-import React from 'react'
+import React from 'react';
 
-// Define a functional component named "MovieCard".
-// We're using **destructuring** to extract properties directly from the `movie` prop. This means that we extract values from props objects and assign them into variables.
-// This improves readability and avoids repetitive code like movie.title, movie.vote_average, etc.
 const MovieCard = ({ 
   movie: { 
-    title,             // The title of the movie
-    vote_average,      // The average rating (score) given to the movie
-    poster_path,       // Relative path to the movie's poster image
-    release_date,      // Full release date, e.g., "2022-07-15"
-    original_language  // ISO code of the movie's original language (e.g., "en", "fr")
-  } 
+    title,             // Movie title
+    vote_average,      // Average rating
+    poster_path,       // Poster image relative path
+    release_date,      // Release date string "YYYY-MM-DD"
+    original_language  // Language code
+  }, 
+  isSaved,             // Boolean: is this movie saved already?
+  onSave,              // Function to save the movie
+  onRemove             // Function to remove the movie from saved list
 }) => {
-  // Return JSX — this is the markup React uses to describe UI elements.
   return (
     <div className="movie-card">
-      {/* Movie poster image */}
+      {/* Movie poster */}
       <img
         src={poster_path 
-          ? `https://image.tmdb.org/t/p/w500/${poster_path}`  // Full poster image URL from TMDB
-          : '/No-Poster-1.png'                                // Fallback image if no poster is available
+          ? `https://image.tmdb.org/t/p/w500/${poster_path}`  // Full poster URL
+          : '/No-Poster-1.png'                                // Fallback if no poster
         }
-        alt={title} // For accessibility — helps screen readers describe the image
+        alt={title}
       />
 
       <div className="mt-4">
         {/* Movie title */}
         <h3>{title}</h3>
 
-        {/* Movie metadata row: rating, language, release year */}
+        {/* Movie info row */}
         <div className="content">
-          
-          {/* Rating section */}
+          {/* Rating with star icon */}
           <div className="rating">
-            {/* Star icon image */}
             <img src="star.svg" alt="Star Icon" />
-            
-            {/* Show rating, rounded to 1 decimal, or 'N/A' if not available */}
             <p>{vote_average ? vote_average.toFixed(1) : 'N/A'}</p>
           </div>
 
-          {/* Separator */}
           <span>•</span>
 
-          {/* Original language (e.g., "en", "es") */}
+          {/* Original language */}
           <p className="lang">{original_language}</p>
 
-          {/* Separator */}
           <span>•</span>
 
-          {/* Display only the year from the release date, or 'N/A' if missing */}
+          {/* Release year extracted from release_date */}
           <p className="year">
             {release_date 
-              ? release_date.split('-')[0]  // Extract the year (e.g., "2022") from "2022-07-15"
+              ? release_date.split('-')[0]
               : 'N/A'
             }
           </p>
         </div>
+
+        {/* Save/Remove button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault(); // Prevent link navigation when button clicked
+            isSaved ? onRemove() : onSave();
+          }}
+          className="mt-4 px-4 py-2 bg-gradient-to-r from-[#3ca55c] to-[#b5ac49] text-white rounded-lg shadow-md hover:scale-105 transition-transform"
+        >
+          {isSaved ? 'Tag ur ' : 'Stoppa i fickan'}
+        </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-// Export the component so it can be imported and used in other files (like App.jsx)
-export default MovieCard
+export default MovieCard;
