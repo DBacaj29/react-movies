@@ -1,78 +1,102 @@
-// Import necessary modules from the Appwrite SDK (Software Developement Kit, tools, libraries, documentation, and code samples that developers use to build software applications)
-// - Client: connects your app to Appwrite backend
-// - Databases: used to interact with your database
-// - ID: utility for generating unique document IDs
-// - Query: used to filter and sort data when querying documents
-import { Client, Databases, ID, Query } from 'appwrite'
+// Import required classes from the Appwrite SDK
+import { Client, Databases, Query } from 'appwrite';
+// - Client: used to initialize and configure the Appwrite connection
+// - Databases: provides methods to interact with database collections
+// - Query: helps build queries for filtering/sorting database data
 
-// Load environment variables (these come from your `.env` file)
-// `import.meta.env` is used by Vite.js (a build tool) to access environment variables
-const PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID;
-const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
-const COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID;
-
-// Initialize the Appwrite client
+// Initialize a new Appwrite client
 const client = new Client()
-    .setEndpoint('https://fra.cloud.appwrite.io/v1')   // Appwrite API endpoint
-    .setProject(`${PROJECT_ID}`)   //  Appwrite project ID
+  .setEndpoint(import.meta.env.VITE_APPWRITE_ENDPOINT) 
+  // Set the API endpoint for your Appwrite server (from .env)
+  .setProject(import.meta.env.VITE_APPWRITE_PROJECT_ID); 
+  // Set the project ID so Appwrite knows which project to interact with
 
-// Create an instance (object created from a class or constructor function) of the Databases service using the client
-const database = new Databases(client);
+// Create a new instance of the Databases service using the client
+const databases = new Databases(client);
 
-/**
- * Function: updateSearchCount
- * Purpose: This function tracks how many times a particular search term is used.
- * If the term has been searched before, it increments its count.
- * Otherwise, it creates a new document for the term.
- * 
- * @param {string} searchTerm - The term the user searched for
- * @param {object} movie - A movie object containing metadata (id, poster_path, etc.)
- */
-export const updateSearchCount = async (searchTerm, movie) => {
-  try {
-    // Step 1: Check if the search term already exists in the database
-    const result = await database.listDocuments(DATABASE_ID, COLLECTION_ID, [
-      Query.equal('searchTerm', searchTerm), // Filter by searchTerm field
-    ]);
+// Define constants for your database and collection IDs
+// These should be stored in your .env file and injected via Vite
+const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+const SEARCH_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SEARCH_COLLECTION_ID;
 
-    // Step 2: If it exists, increment the count field
-    if (result.documents.length > 0) {
-      const doc = result.documents[0]; // Get the first (and only) matching document
-
-      await database.updateDocument(DATABASE_ID, COLLECTION_ID, doc.$id, {
-        count: doc.count + 1 // Update the count field by incrementing it
-      });
-
-    // Step 3: If it doesn't exist, create a new document with count set to 1
-    } else {
-      await database.createDocument(DATABASE_ID, COLLECTION_ID, ID.unique(), {
-        searchTerm,             // Store the search term
-        count: 1,               // Initialize the count
-        movie_id: movie.id,     // Store the movie's ID (can help with linking)
-        poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`, // Store movie's poster URL
-      });
-    }
-  } catch (error) {
-    // Catch and log any errors during the process
-    console.error(error);
-  }
-}
-
-/**
- * Function: getTrendingMovies
- * Purpose: Retrieves the top 5 most searched movies based on search count
- * 
- * @returns {Array} - Array of movie documents sorted by popularity
- */
+// ------------------------------
+// Function: getTrendingMovies
+// ------------------------------
+// Fetches top 5 most-searched movies from the Appwrite backend
 export const getTrendingMovies = async () => {
   try {
-    const result = await database.listDocuments(DATABASE_ID, COLLECTION_ID, [
-      Query.limit(5),               // Limit the number of returned documents to 5
-      Query.orderDesc("count")      // Order by 'count' field in descending order
-    ]);
+    const response = await databases.listDocuments(
+      DATABASE_ID,                     // The ID of the database to query
+      SEARCH_COLLECTION_ID,           // The ID of the collection to pull documents from
+      [
+        Query.orderDesc('count'),     // Sort by 'count' field, descending
+        Query.limit(5),               // Limit the results to 5 documents
+      ]
+    );
 
-    return result.documents;        // Return the documents to be used in the UI
+    // Map over the documents and return simplified movie objects
+    return response.documents.map((doc) => ({
+      $id: doc.$id,                   // The unique document ID in Appwrite
+      movie_id: doc.movie_id,        // The TMDB movie ID
+      title: doc.title,              // Movie title from TMDB
+      poster_url: doc.poster_url     // Poster URL to display in the UI
+    }));
   } catch (error) {
-    console.error(error);
+    console.error('Error in getTrendingMovies:', error);
+    return []; // Fallback to an empty array if something goes wrong
   }
-}
+};
+
+// ------------------------------
+// Function: updateSearchCount
+// ------------------------------
+// Either increments the count of an existing search term or creates a new document
+export const updateSearchCount = async (query, movie) => {
+  try {
+    // First, check if this query already exists in the database
+    const existing = await databases.listDocuments(
+      DATABASE_ID,
+      SEARCH_COLLECTION_ID,
+      [Query.equal('query', query)]  // Find document where 'query' field matches
+    );
+
+    if (existing.documents.length > 0) {
+      // If a document exists, update it by incrementing the count
+      const doc = existing.documents[0];
+
+      await databases.updateDocument(
+        DATABASE_ID,
+        SEARCH_COLLECTION_ID,
+        doc.$id,                      // Document ID to update
+        {
+          count: doc.count + 1       // Increment the count by 1
+        }
+      );
+    } else {
+      // If the query is new, create a new document with initial count = 1
+      await databases.createDocument(
+        DATABASE_ID,
+        SEARCH_COLLECTION_ID,
+        movie.$id,                   // Use TMDB movie ID as the document ID (ensures uniqueness)
+        {
+          query,                     // Search term the user entered
+          count: 1,                  // First time searched, so count is 1
+          title: movie.title,        // Store the movie title
+          poster_url: movie.poster_path 
+            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
+            : '',                    // Construct poster URL using TMDB path or fallback to empty
+          movie_id: movie.id         // TMDB movie ID
+        }
+      );
+    }
+  } catch (error) {
+    console.error('Error in updateSearchCount:', error);
+    // Catch and log any API or logic errors
+  }
+};
+
+// Export as default as well (optional)
+export default {
+  getTrendingMovies,
+  updateSearchCount,
+};

@@ -1,163 +1,373 @@
+/* 
+  Importing Google Fonts:
+  These @import statements pull in font families from Google Fonts CDN.
+  - "DM Sans" is imported with multiple variations (italics, weight, optical sizing).
+  - "Bebas Neue" is a decorative font.
+  The `&display=swap` tells browsers to swap fonts as soon as they're loaded.
+*/
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
 
+/* 
+  Import Tailwind CSS base styles and utilities.
+  This directive includes all Tailwind CSS core styles into this file.
+  Tailwind uses PostCSS and this directive is processed by it.
+*/
 @import "tailwindcss";
 
+/* 
+  Define custom CSS variables inside a custom @theme block.
+  These are reusable design tokens for colors, fonts, breakpoints, and images.
+  Variables start with `--` and can be accessed with var(--variable-name).
+  This helps keep the theme consistent and easy to update.
+*/
 @theme {
+  /* Primary background color: very dark navy/black */
   --color-primary: #030014;
 
+  /* Light color shades, useful for text or backgrounds */
   --color-light-100: #cecefb;
   --color-light-200: #a8b5db;
 
+  /* Gray color for neutral text */
   --color-gray-100: #9ca4ab;
 
+  /* Dark shade, used for backgrounds */
   --color-dark-100: #0f0d23;
 
+  /* Font family for main body text */
   --font-dm-sans: DM Sans, sans-serif;
 
+  /* Extra small breakpoint for responsive design */
   --breakpoint-xs: 480px;
 
+  /* Background image URL for the hero section */
   --background-image-hero-pattern: url("/hero-bg.png");
 }
 
+/* 
+  Base layer for foundational styles.
+  Tailwind CSS layers allow organizing styles by purpose.
+*/
 @layer base {
+  /* Style for <body> element */
   body {
+    /* Apply the DM Sans font imported earlier */
     font-family: "DM Sans", serif;
+
+    /* Enable optical sizing if supported by the font for better legibility */
     font-optical-sizing: auto;
+
+    /* Set background color to the very dark primary color */
     background: #030014;
   }
 
+  /* Nest another layer for components inside base - likely an error or misplacement but valid CSS */
   @layer components {
-  .movie-detail {
-    @apply bg-dark-100 p-6 rounded-2xl text-white flex flex-col md:flex-row gap-10 items-start shadow-inner shadow-light-100/10;
+    /* Styling a specific component with class .movie-detail */
+    .movie-detail {
+      /*
+        Tailwind's @apply directive applies utility classes here:
+        - bg-dark-100: background color from theme
+        - p-6: padding all around (1.5rem)
+        - rounded-2xl: extra large rounded corners
+        - text-white: white text color
+        - flex flex-col md:flex-row: flexbox layout, column on small screens, row on medium+
+        - gap-10: gap between flex items
+        - items-start: align items at the start vertically
+        - shadow-inner: inner shadow for depth
+        - shadow-light-100/10: light shadow color with 10% opacity
+      */
+      @apply bg-dark-100 p-6 rounded-2xl text-white flex flex-col md:flex-row gap-10 items-start shadow-inner shadow-light-100/10;
+    }
   }
-}
 
+  /* Style for h1 headings */
   h1 {
+    /*
+      Tailwind classes applied:
+      - mx-auto: horizontal center margin
+      - max-w-4xl: max width for readability
+      - text-center: center aligned text
+      - text-5xl: large font size
+      - font-bold: bold font weight
+      - leading-tight: tight line height
+      - tracking-[-1%]: slightly condensed letter spacing (negative tracking)
+      - text-white: white text color
+      - sm:text-[64px] sm:leading-[76px]: larger font and line height on small+ screens
+    */
     @apply mx-auto max-w-4xl text-center text-5xl font-bold leading-tight tracking-[-1%] text-white sm:text-[64px] sm:leading-[76px];
   }
 
+  /* Style for h2 headings */
   h2 {
+    /* Slightly smaller heading, bold and white text */
     @apply text-2xl font-bold text-white sm:text-3xl;
   }
 
+  /* Style for main content container */
   main {
+    /*
+      Minimum screen height and relative positioning
+      Background color from the primary color variable
+    */
     @apply min-h-screen relative bg-primary;
   }
 
+  /* Style for header element */
   header {
+    /*
+      Margins for vertical spacing
+      Smaller margin on mobile, larger on small+ screens
+    */
     @apply sm:mt-10 mt-5;
   }
 
+  /* Style for images inside header */
   header img {
+    /*
+      Full width but max width capped
+      Auto height to maintain aspect ratio
+      Object-fit contain so image scales nicely
+      Centered horizontally with margin auto
+      Drop shadow for subtle depth
+    */
     @apply w-full max-w-lg h-auto object-contain mx-auto drop-shadow-md;
   }
 }
 
+/* 
+  Component styles layer for more specific UI parts.
+*/
 @layer components {
+  /* Background pattern for hero section */
   .pattern {
+    /*
+      Use the hero pattern image as a full screen background
+      Positioned absolute with z-index 0 to sit behind content
+      Centered and covers entire area
+    */
     @apply bg-hero-pattern w-full h-screen bg-center bg-cover absolute z-0;
   }
 
+  /* Wrapper container for page content */
   .wrapper {
+    /*
+      Padding inside container, responsive
+      Max width capped
+      Centered horizontally
+      Flex column layout with relative positioning and z-index 10 to appear above backgrounds
+    */
     @apply px-5 py-12 xs:p-10 max-w-7xl mx-auto flex flex-col relative z-10;
   }
 
+  /* Trending movies section */
   .trending {
-    @apply mt-20;
+    @apply mt-20; /* margin top for spacing */
 
+    /* Nested selector for ul inside trending */
     & ul {
+      /*
+        Flex row layout, horizontal scrolling overflow
+        Gap between items, negative top margin to pull upwards
+        Full width container
+        Custom utility to hide scrollbar visually
+      */
       @apply flex flex-row overflow-y-auto gap-5 -mt-10 w-full hide-scrollbar;
     }
 
+    /* List items inside trending ul */
     & ul li {
+      /*
+        Minimum width to ensure consistent sizing
+        Flex row with vertical alignment centered
+      */
       @apply min-w-[230px] flex flex-row items-center;
     }
 
+    /* Paragraph inside li */
     & ul li p {
+      /*
+        Fancy text utility for special font style
+        Margin top for spacing
+        Prevent text wrapping
+      */
       @apply fancy-text mt-[22px] text-nowrap;
     }
 
+    /* Image inside li */
     & ul li img {
+      /*
+        Fixed size width and height for uniform thumbnails
+        Rounded corners for style
+        Object-fit cover to crop images nicely
+        Negative left margin to slightly offset image position
+      */
       @apply w-[127px] h-[163px] rounded-lg object-cover -ml-3.5;
     }
   }
 
+  /* Search bar container */
   .search {
+    /*
+      Full width input background with low opacity
+      Padding and rounded corners
+      Max width capped and centered horizontally
+      Margin top for spacing
+    */
     @apply w-full bg-light-100/5 px-4 py-3 rounded-lg mt-10 max-w-3xl mx-auto;
 
+    /* Div inside search for layout */
     & div {
       @apply relative flex items-center;
     }
 
+    /* Image inside search (likely an icon) */
     & img {
+      /*
+        Positioned absolutely inside relative parent div
+        Positioned left with specific height and width
+      */
       @apply absolute left-2 h-5 w-5;
     }
 
+    /* Input element inside search */
     & input {
+      /*
+        Full width input with transparent background
+        Padding for top/bottom and left/right to position text and icon nicely
+        Text styles for font size, color, and placeholder color
+        Remove default focus outline (outline-hidden custom utility likely does this)
+      */
       @apply w-full bg-transparent py-2 sm:pr-10 pl-10 text-base text-gray-200 placeholder-light-200 outline-hidden;
     }
   }
 
+  /* Container for all movies */
   .all-movies {
+    /* Vertical spacing between children */
     @apply space-y-9;
 
+    /* ul inside all-movies */
     & ul {
+      /*
+        CSS Grid layout with gap and responsive column count
+      */
       @apply grid grid-cols-1 gap-5 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4;
     }
   }
 
+  /* Styling individual movie cards */
   .movie-card {
+    /*
+      Background dark color, padding, rounded corners
+      Inner shadow for depth effect
+    */
     @apply bg-dark-100 p-5 rounded-2xl shadow-inner shadow-light-100/10;
 
+    /* Image inside movie-card */
     & img {
+      /*
+        Rounded corners for images
+        Height auto and full width for responsiveness
+      */
       @apply rounded-lg h-auto w-full;
     }
 
+    /* h3 heading inside movie-card */
     & h3 {
+      /*
+        White bold text, base font size
+        Line clamp utility likely truncates text to one line with ellipsis
+      */
       @apply text-white font-bold text-base line-clamp-1;
     }
 
+    /* Content container inside movie-card */
     & .content {
+      /*
+        Margin top, flex row with wrapped items and gaps
+      */
       @apply mt-2 flex flex-row items-center flex-wrap gap-2;
     }
 
+    /* Rating section inside content */
     & .rating {
+      /*
+        Flex row layout with centered alignment and gap
+      */
       @apply flex flex-row items-center gap-1;
     }
 
+    /* Image inside rating */
     & .rating img {
+      /*
+        Custom size utility "size-4" (probably sets width and height)
+        Object contain for correct aspect ratio
+      */
       @apply size-4 object-contain;
     }
 
+    /* Paragraph inside rating */
     & .rating p {
+      /*
+        Bold base text, white color
+      */
       @apply font-bold text-base text-white;
     }
 
+    /* Span elements inside content */
     & .content span {
+      /*
+        Smaller text, light gray color
+      */
       @apply text-sm text-gray-100;
     }
 
+    /* Specific styling for language text */
     & .content .lang {
+      /*
+        Capitalize first letter, medium weight, base font size, gray color
+      */
       @apply capitalize text-gray-100 font-medium text-base;
     }
 
+    /* Specific styling for year text */
     & .content .year {
+      /*
+        Medium weight, base font size, gray color
+      */
       @apply text-gray-100 font-medium text-base;
     }
   }
 }
 
+/* 
+  Custom utility class for gradient text.
+  Applies a background gradient and clips the text to show the gradient fill,
+  making the text itself appear gradient colored while remaining selectable.
+*/
 @utility text-gradient {
   @apply bg-linear-to-r from-[#D6C7FF] to-[#AB8BFF] bg-clip-text text-transparent;
 }
 
+/* 
+  Custom utility for fancy large text style.
+  -webkit-text-stroke applies an outline to the text.
+  Very large font size and use of "Bebas Neue" font.
+*/
 @utility fancy-text {
   -webkit-text-stroke: 5px rgba(206, 206, 251, 0.5);
   font-size: 190px;
   font-family: "Bebas Neue", sans-serif;
 }
 
+/* 
+  Custom utility to hide scrollbars cross-browser:
+  - `-ms-overflow-style: none` for IE and Edge
+  - `scrollbar-width: none` for Firefox
+  - `&::-webkit-scrollbar` hides scrollbar in WebKit browsers like Chrome and Safari.
+*/
 @utility hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -167,6 +377,12 @@
   }
 }
 
+/* 
+  Styles for pagination buttons container:
+  - Flexbox layout centered horizontally and vertically.
+  - Gap between buttons.
+  - Margin on top for spacing.
+*/
 .pagination-buttons {
   display: flex;
   justify-content: center;
@@ -175,6 +391,18 @@
   margin-top: 2rem;
 }
 
+/* 
+  Styles for pagination buttons themselves:
+  - Background gradient from purple to lighter purple.
+  - White text, no border.
+  - Rounded corners.
+  - Padding for size.
+  - Bold font weight, standard font size.
+  - Box shadow for subtle glow.
+  - Cursor pointer for interactivity.
+  - Smooth transform and opacity transitions for hover effects.
+  - Flexbox centering inside buttons for any content.
+*/
 .pagination-buttons button {
   background: linear-gradient(135deg, #6e48aa, #9d50bb);
   color: white;
@@ -191,21 +419,26 @@
   align-items: center;
 }
 
+/* Hover effect for pagination buttons */
 .pagination-buttons button:hover {
-  transform: scale(1.05);
+  transform: scale(1.05); /* Slightly enlarge button */
 }
 
+/* Disabled state for buttons */
 .pagination-buttons button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none;
+  opacity: 0.4; /* Fade the button */
+  cursor: not-allowed; /* Change cursor to forbidden icon */
+  transform: none; /* Remove hover transform */
 }
 
+/* Span inside pagination buttons for displaying page numbers or info */
 .pagination-buttons span {
   font-size: 1.1rem;
   font-weight: 500;
-  color: #aaa;
+  color: #aaa; /* Light gray text */
 }
+
+/* Make trending movie images have pointer cursor to indicate clickability */
 .trending ul li img {
   cursor: pointer;
 }
